@@ -261,11 +261,11 @@ function job_self_command(commandArgs, eventArgs)
 			local abil_recasts = windower.ffxi.get_ability_recasts()
 			local spell_recasts = windower.ffxi.get_spell_recasts()
 			
-			if (state.HybridMode.value ~= 'Normal' or state.DefenseMode.value ~= 'None')  and buffactive['Souleater'] then
+			if buffactive['Souleater'] then
 				send_command('cancel souleater')
 			end
 			
-			if (state.HybridMode.value ~= 'Normal' or state.DefenseMode.value ~= 'None')  and buffactive['Last Resort'] then
+			if (state.HybridMode.value ~= 'Normal' or state.DefenseMode.value ~= 'None') and buffactive['Last Resort'] then
 				send_command('cancel last resort')
 			end
 			
@@ -423,6 +423,17 @@ function check_buff()
 	if state.AutoBuffMode.value ~= 'Off' and not data.areas.cities:contains(world.area) then
 		local spell_recasts = windower.ffxi.get_spell_recasts()
 		for i in pairs(buff_spell_lists[state.AutoBuffMode.Value]) do
+			
+		if not buffactive['Refresh'] and spell_recasts[109] < latency and (player.mpp < 50 and (player.in_combat or being_attacked)) then
+				windower.chat.input('/ma "Refresh" <me>')
+				tickdelay = os.clock() + 3
+				return true
+			elseif not buffactive['Refresh'] and spell_recasts[109] < latency and (player.mpp < 80 and not (player.in_combat or being_attacked)) then
+				windower.chat.input('/ma "Refresh" <me>')
+				tickdelay = os.clock() + 3
+				return true
+			end		
+			
 			if not buffactive[buff_spell_lists[state.AutoBuffMode.Value][i].Buff] and (buff_spell_lists[state.AutoBuffMode.Value][i].When == 'Always' or (buff_spell_lists[state.AutoBuffMode.Value][i].When == 'Combat' and (player.in_combat or being_attacked)) or (buff_spell_lists[state.AutoBuffMode.Value][i].When == 'Engaged' and player.status == 'Engaged') or (buff_spell_lists[state.AutoBuffMode.Value][i].When == 'Idle' and player.status == 'Idle') or (buff_spell_lists[state.AutoBuffMode.Value][i].When == 'OutOfCombat' and not (player.in_combat or being_attacked))) and spell_recasts[buff_spell_lists[state.AutoBuffMode.Value][i].SpellID] < spell_latency and silent_can_use(buff_spell_lists[state.AutoBuffMode.Value][i].SpellID) then
 				windower.chat.input('/ma "'..buff_spell_lists[state.AutoBuffMode.Value][i].Name..'" <me>')
 				tickdelay = os.clock() + 2
@@ -430,22 +441,32 @@ function check_buff()
 			end
 		end
 		
+			if not buffactive['Regen'] and spell_recasts[108] < latency and (player.hpp < 70 and (player.in_combat or being_attacked)) then
+				windower.chat.input('/ma "Regen IV" <me>')
+				tickdelay = os.clock() + 3
+				return true
+			elseif not buffactive['Regen'] and spell_recasts[108] < latency and (player.hpp < 80 and not (player.in_combat or being_attacked)) then
+				windower.chat.input('/ma "Regen IV" <me>')
+				tickdelay = os.clock() + 3
+				return true
+			end
+			
 		if player.in_combat then
 			local abil_recasts = windower.ffxi.get_ability_recasts()
 			
-			if not buffactive['Swordplay'] and abil_recasts[24] < latency then
+			if not buffactive['Swordplay'] and abil_recasts[24] < latency and player.status == 'Engaged' then
 				windower.chat.input('/ja "Swordplay" <me>')
 				tickdelay = os.clock() + 1.1
 				return true
-			elseif player.sub_job == 'DRK' and not buffactive['Last Resort'] and abil_recasts[87] < latency then
+			elseif player.sub_job == 'DRK' and not buffactive['Last Resort'] and abil_recasts[87] < latency and player.status == 'Engaged' then
 				windower.chat.input('/ja "Last Resort" <me>')
 				tickdelay = os.clock() + 1.1
 				return true
-			elseif player.sub_job == 'WAR' and not buffactive.Berserk and abil_recasts[1] < latency then
+			elseif player.sub_job == 'WAR' and not buffactive.Berserk and abil_recasts[1] < latency and player.status == 'Engaged' then
 				windower.chat.input('/ja "Berserk" <me>')
 				tickdelay = os.clock() + 1.1
 				return true
-			elseif player.sub_job == 'WAR' and not buffactive.Aggressor and abil_recasts[4] < latency then
+			elseif player.sub_job == 'WAR' and not buffactive.Aggressor and abil_recasts[4] < latency and player.status == 'Engaged' then
 				windower.chat.input('/ja "Aggressor" <me>')
 				tickdelay = os.clock() + 1.1
 				return true
@@ -492,10 +513,19 @@ end
 
 buff_spell_lists = {
 	Auto = {--Options for When are: Always, Engaged, Idle, OutOfCombat, Combat
+		{Name='Temper',		Buff='Multi Strikes',	SpellID=493,	When='Engaged'},	
+		{Name='Haste',		Buff='Haste',			SpellID=57,		When='Always'},
+		{Name='Aquaveil',	Buff='Aquaveil',		SpellID=55,		When='OutOfCombat'},
+		{Name='Stoneskin',	Buff='Stoneskin',		SpellID=54,		When='OutOfCombat'},
+		{Name='Blink',		Buff='Blink',			SpellID=53,		When='OutOfCombat'},
 		{Name='Crusade',	Buff='Enmity Boost',	SpellID=476,	When='Always'},
-		{Name='Temper',		Buff='Multi Strikes',	SpellID=493,	When='Engaged'},
 		{Name='Phalanx',	Buff='Phalanx',			SpellID=106,	When='Always'},
-		{Name='Refresh',	Buff='Refresh',			SpellID=109,	When='Idle'},
+		{Name='Shell V',	Buff='Shell',			SpellID=52,		When='Always'},			
+		--{Name='Regen IV',	Buff='Regen',			SpellID=477,	When='OutOfCombat'},
+		--{Name='Refresh',	Buff='Refresh',			SpellID=109,	When='OutOfCombat'},
+		{Name='Cocoon',		Buff='Defense Boost',	SpellID=547,	When='Always'},		
+		{Name='Protect IV',	Buff='Protect',			SpellID=46,		When='Always'},
+		
 	},
 
 	Default = {

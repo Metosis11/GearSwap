@@ -1095,7 +1095,7 @@ function check_silence(spell, spellMap, eventArgs)
 			return true
 		elseif buffactive.silence then
 			if buffactive.paralysis then
-				if player.inventory["Remedy"] then
+				if player.inventory["Remedy"] or player.satchel["Remedy"] then
 					send_command('input /item "Remedy" <me>')
 				elseif player.inventory['Echo Drops'] or player.satchel['Echo Drops'] then
 					send_command('input /item "Echo Drops" <me>')
@@ -1105,7 +1105,7 @@ function check_silence(spell, spellMap, eventArgs)
 			else
 				if player.inventory['Echo Drops'] or player.satchel['Echo Drops'] then
 					send_command('input /item "Echo Drops" <me>')
-				elseif player.inventory["Remedy"] then
+				elseif player.inventory["Remedy"] or player.satchel["Remedy"] then
 					send_command('input /item "Remedy" <me>')
 				else
 					add_to_chat(123,'Abort: You are silenced.')
@@ -2221,7 +2221,8 @@ function check_rune()
 			tickdelay = os.clock() + 1.8
 			return true
 
-		elseif player.main_job == 'RUN' and abil_recasts[242] < latency and (player.hpp < 70 or (state.RuneElement.Value == 'Tenebrae' and player.mpp < 75)) then
+		elseif player.main_job == 'RUN' and abil_recasts[242] < latency and ((player.hpp < 60 or (state.RuneElement.Value == 'Tenebrae' and player.mpp < 75)) 
+			or buffactive.paralysis or buffactive.curse or buffactive.doom or buffactive.mute or buffactive.bane or buffactive.virus) then
 			windower.chat.input('/ja "Vivacious Pulse" <me>')
 			tickdelay = os.clock() + 1.8
 			return true
