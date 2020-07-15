@@ -2221,7 +2221,7 @@ function check_rune()
 			tickdelay = os.clock() + 1.8
 			return true
 
-		elseif player.main_job == 'RUN' and abil_recasts[242] < latency and (player.hpp < 50 or (state.RuneElement.Value == 'Tenebrae' and player.mpp < 75)) then
+		elseif player.main_job == 'RUN' and abil_recasts[242] < latency and (player.hpp < 70 or (state.RuneElement.Value == 'Tenebrae' and player.mpp < 75)) then
 			windower.chat.input('/ja "Vivacious Pulse" <me>')
 			tickdelay = os.clock() + 1.8
 			return true
